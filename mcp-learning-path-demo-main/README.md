@@ -59,3 +59,35 @@ The application will be available at `http://localhost:8501` by default.
 - `utils.py` - Utility functions and helper methods
 - `prompt.py` - Prompt template
 - `requirements.txt` - Project dependencies
+
+🚀 MCP MegaWorkshop 2025 – Project Access Details
+
+I’m excited to share the MCP MegaWorkshop 2025 project with you! 🎉
+You can access the live app here:
+
+🔗 Project Link:
+https://mcp-megaworkshop-2025.streamlit.app/
+
+🔑 Credentials & API Access
+Please use the following credentials and API URLs for integration:
+
+🔐 Google API Key:
+AIzaSyCo8ciO8_1MuD-gb4jgeg1RhKbj1zLYtmI
+
+🔁 Pipedream Integration URLs:
+
+📺 YouTube API:
+https://mcp.pipedream.net/7c74e408-2fed-4cc5-9ed0-49be40ee4d2b/youtube_data_api
+
+📁 Google Drive API:
+https://mcp.pipedream.net/7c74e408-2fed-4cc5-9ed0-49be40ee4d2b/google_drive
+
+🧾 Notion API:
+https://mcp.pipedream.net/7c74e408-2fed-4cc5-9ed0-49be40ee4d2b/notion
+
+Feel free to explore, test the integrations, and share feedback!
+Let me know if you face any issues or need access support.
+
+— Rishabh Tomar
+
+
