@@ -12,7 +12,7 @@ cfg = RunnableConfig(recursion_limit=100)
 def initialize_model(google_api_key: str) -> ChatGoogleGenerativeAI:
     return ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        google_api_key=AIzaSyCo8ciO8_1MuD-gb4jgeg1RhKbj1zLYtmI
+        google_api_key=google_api_key
     )
 
 async def setup_agent_with_tools(
@@ -93,7 +93,7 @@ def run_agent_sync(
     async def _run():
         try:
             agent = await setup_agent_with_tools(
-                google_api_key=AIzaSyCo8ciO8_1MuD-gb4jgeg1RhKbj1zLYtmI,
+                google_api_key=google_api_key,
                 youtube_pipedream_url=youtube_pipedream_url,
                 drive_pipedream_url=drive_pipedream_url,
                 notion_pipedream_url=notion_pipedream_url,
