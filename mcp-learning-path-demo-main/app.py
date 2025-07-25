@@ -1,14 +1,9 @@
-import os
-import toml
 import streamlit as st
+import tomllib
 from utils import run_agent_sync
 
-if not os.path.exists("config.toml"):
-    st.error("❌ Missing config.toml. Please add it to your project root.")
-    st.stop()
-
-config = toml.load("config.toml")
-
+with open("config.toml", "rb") as f:
+    config = tomllib.load(f)
 
 st.set_page_config(page_title="MCP POC", page_icon="🤖", layout="wide")
 
