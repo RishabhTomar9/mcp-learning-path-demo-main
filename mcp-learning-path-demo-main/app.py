@@ -1,13 +1,12 @@
 import streamlit as st
-from dotenv import load_dotenv
-import os
+import toml
 from utils import run_agent_sync
 
 st.set_page_config(page_title="MCP POC", page_icon="🤖", layout="wide")
 
 st.title("Model Context Protocol(MCP) - Learning Path Generator")
 
-load_dotenv()
+config = toml.load("config.toml")
 
 # Initialize session state
 if 'current_step' not in st.session_state:
@@ -20,11 +19,10 @@ if 'is_generating' not in st.session_state:
     st.session_state.is_generating = False
 
 # --- Predefined Credentials ---
-google_api_key = os.getenv("GOOGLE_API_KEY")
-youtube_pipedream_url = os.getenv("YOUTUBE_PIPEDREAM_URL")
-drive_pipedream_url = os.getenv("DRIVE_PIPEDREAM_URL")
-notion_pipedream_url = os.getenv("NOTION_PIPEDREAM_URL")
-
+google_api_key = config["api_keys"]["google_api_key"]
+youtube_pipedream_url = config["pipedream_urls"]["youtube"]
+drive_pipedream_url = config["pipedream_urls"]["drive"]
+notion_pipedream_url = config["pipedream_urls"]["notion"]
 # --- Sidebar for Display ---
 st.sidebar.header("🔐 Credentials (Read-Only)")
 
