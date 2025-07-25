@@ -1,11 +1,15 @@
 import streamlit as st
+from dotenv import load_dotenv
+import os
 from utils import run_agent_sync
 
 st.set_page_config(page_title="MCP POC", page_icon="🤖", layout="wide")
 
 st.title("Model Context Protocol(MCP) - Learning Path Generator")
 
-# Initialize session state for progress
+load_dotenv()
+
+# Initialize session state
 if 'current_step' not in st.session_state:
     st.session_state.current_step = ""
 if 'progress' not in st.session_state:
@@ -15,57 +19,47 @@ if 'last_section' not in st.session_state:
 if 'is_generating' not in st.session_state:
     st.session_state.is_generating = False
 
-# Sidebar for API and URL configuration
-st.sidebar.header("Configuration")
+# --- Predefined Credentials ---
+google_api_key = os.getenv("GOOGLE_API_KEY")
+youtube_pipedream_url = os.getenv("YOUTUBE_PIPEDREAM_URL")
+drive_pipedream_url = os.getenv("DRIVE_PIPEDREAM_URL")
+notion_pipedream_url = os.getenv("NOTION_PIPEDREAM_URL")
 
-# API Key input
-google_api_key = st.sidebar.text_input("Google API Key", type="password")
+# --- Sidebar for Display ---
+st.sidebar.header("🔐 Credentials (Read-Only)")
 
-# Pipedream URLs
-st.sidebar.subheader("Pipedream URLs")
-youtube_pipedream_url = st.sidebar.text_input("YouTube URL (Required)", 
-    placeholder="Enter your Pipedream YouTube URL")
+st.sidebar.text_input("Google API Key", value=google_api_key, disabled=True)
+st.sidebar.text_input("YouTube URL", value=youtube_pipedream_url, disabled=True)
 
-# Secondary tool selection
-secondary_tool = st.sidebar.radio(
-    "Select Secondary Tool:",
-    ["Drive", "Notion"]
-)
+secondary_tool = st.sidebar.radio("Secondary Tool", ["Drive", "Notion"])
 
-# Secondary tool URL input
 if secondary_tool == "Drive":
-    drive_pipedream_url = st.sidebar.text_input("Drive URL", 
-        placeholder="Enter your Pipedream Drive URL")
-    notion_pipedream_url = None
+    st.sidebar.text_input("Drive URL", value=drive_pipedream_url, disabled=True)
 else:
-    notion_pipedream_url = st.sidebar.text_input("Notion URL", 
-        placeholder="Enter your Pipedream Notion URL")
-    drive_pipedream_url = None
+    st.sidebar.text_input("Notion URL", value=notion_pipedream_url, disabled=True)
 
-# Quick guide before goal input
+# --- Quick Guide ---
 st.info("""
 **Quick Guide:**
-1. Enter your Google API key and YouTube URL (required)
-2. Select and configure your secondary tool (Drive or Notion)
-3. Enter a clear learning goal, for example:
+1. Pre-integrated credentials are used for Google API, YouTube, Drive, and Notion.
+2. Just enter your learning goal, and click Generate.
+3. Example:
     - "I want to learn python basics in 3 days"
     - "I want to learn data science basics in 10 days"
 """)
 
-# Main content area
+# --- Main Input ---
 st.header("Enter Your Goal")
 user_goal = st.text_input("Enter your learning goal:",
-                        help="Describe what you want to learn, and we'll generate a structured path using YouTube content and your selected tool.")
+                          help="Describe what you want to learn, and we'll generate a structured path.")
 
-# Progress area
+# --- Progress UI ---
 progress_container = st.container()
 progress_bar = st.empty()
 
 def update_progress(message: str):
-    """Update progress in the Streamlit UI"""
     st.session_state.current_step = message
-    
-    # Determine section and update progress
+
     if "Setting up agent with tools" in message:
         section = "Setup"
         st.session_state.progress = 0.1
@@ -84,65 +78,48 @@ def update_progress(message: str):
         st.session_state.is_generating = False
     else:
         section = st.session_state.last_section or "Progress"
-    
+
     st.session_state.last_section = section
-    
-    # Show progress bar
     progress_bar.progress(st.session_state.progress)
-    
-    # Update progress container with current status
+
     with progress_container:
-        # Show section header if it changed
         if section != st.session_state.last_section and section != "Complete":
             st.write(f"**{section}**")
-        
-        # Show message with tick for completed steps
+
         if message == "Learning path generation complete!":
             st.success("All steps completed! 🎉")
         else:
             prefix = "✓" if st.session_state.progress >= 0.5 else "→"
             st.write(f"{prefix} {message}")
 
-# Generate Learning Path button
+# --- Generate Button ---
 if st.button("Generate Learning Path", type="primary", disabled=st.session_state.is_generating):
-    if not google_api_key:
-        st.error("Please enter your Google API key in the sidebar.")
-    elif not youtube_pipedream_url:
-        st.error("YouTube URL is required. Please enter your Pipedream YouTube URL in the sidebar.")
-    elif (secondary_tool == "Drive" and not drive_pipedream_url) or (secondary_tool == "Notion" and not notion_pipedream_url):
-        st.error(f"Please enter your Pipedream {secondary_tool} URL in the sidebar.")
-    elif not user_goal:
+    if not user_goal:
         st.warning("Please enter your learning goal.")
     else:
         try:
-            # Set generating flag
             st.session_state.is_generating = True
-            
-            # Reset progress
             st.session_state.current_step = ""
             st.session_state.progress = 0
             st.session_state.last_section = ""
-            
+
             result = run_agent_sync(
                 google_api_key=google_api_key,
                 youtube_pipedream_url=youtube_pipedream_url,
-                drive_pipedream_url=drive_pipedream_url,
-                notion_pipedream_url=notion_pipedream_url,
+                drive_pipedream_url=drive_pipedream_url if secondary_tool == "Drive" else None,
+                notion_pipedream_url=notion_pipedream_url if secondary_tool == "Notion" else None,
                 user_goal=user_goal,
                 progress_callback=update_progress
             )
-            
-            # Display results
+
             st.header("Your Learning Path")
-            # print(result)
             if result and "messages" in result:
                 for msg in result["messages"]:
                     st.markdown(f"📚 {msg.content}")
-
             else:
                 st.error("No results were generated. Please try again.")
                 st.session_state.is_generating = False
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
-            st.error("Please check your API keys and URLs, and try again.")
+            st.error("Please check your configuration and try again.")
             st.session_state.is_generating = False
